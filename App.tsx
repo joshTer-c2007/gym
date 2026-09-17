@@ -1,39 +1,54 @@
-import 'react-native-gesture-handler'; // Obligatorio en la línea 1
+import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { RoutineProvider } from './src/context/RoutineContext';
 
-// Importaciones de tus archivos
 import DrawerNavigator from './src/navigators/DrawerNavigator';
-import ChestDetailScreen from './src/screens/ChestDetailScreen';
+import RoutineDetailScreen from './src/screens/RoutineDetailScreen';
+import AddRoutineScreen from './src/screens/AddRoutineScreen';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <NavigationContainer theme={DarkTheme}>
-        <Stack.Navigator>
-          {/* Nivel 1 (Drawer) como pantalla inicial del Stack */}
-          <Stack.Screen 
-            name="DrawerRoot" 
-            component={DrawerNavigator} 
-            options={{ headerShown: false }} 
-          />
-          
-          {/* Nivel 3 (Stack apilado) Vista de detalles */}
-          <Stack.Screen 
-            name="ChestDetail" 
-            component={ChestDetailScreen} 
-            options={{ 
-              title: 'Rutina de Pecho',
-              headerStyle: { backgroundColor: '#121212' },
-              headerTintColor: '#FF4500', // Flecha naranja
-              headerTitleStyle: { color: '#FFF' }
-            }} 
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </GestureHandlerRootView>
+    <RoutineProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <NavigationContainer theme={DarkTheme}>
+          <Stack.Navigator>
+            {/* Pantalla principal (Drawer con Tabs y Listado) */}
+            <Stack.Screen
+              name="DrawerRoot"
+              component={DrawerNavigator}
+              options={{ headerShown: false }}
+            />
+            
+            {/* Pantalla de Detalles Dinámica (Paso 4) */}
+            <Stack.Screen
+              name="RoutineDetail"
+              component={RoutineDetailScreen}
+              options={{
+                title: 'Detalle de Rutina',
+                headerStyle: { backgroundColor: '#121212' },
+                headerTintColor: '#FF4500',
+                headerTitleStyle: { color: '#FFF' },
+              }}
+            />
+
+            {/* Pantalla del Formulario Inteligente Crear/Editar (Paso 3) */}
+            <Stack.Screen
+              name="AddRoutine"
+              component={AddRoutineScreen}
+              options={{
+                title: 'Gestión de Rutina',
+                headerStyle: { backgroundColor: '#121212' },
+                headerTintColor: '#FF4500',
+                headerTitleStyle: { color: '#FFF' },
+              }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </GestureHandlerRootView>
+    </RoutineProvider>
   );
 }

@@ -1,56 +1,149 @@
-import { Text, StyleSheet, View, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import React from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRoutines, Routine } from '../context/RoutineContext';
+import { useNavigation } from '@react-navigation/native';
 
 export default function RoutineListScreen() {
+  const { routines, deleteRoutine } = useRoutines();
   const navigation = useNavigation<any>();
-  
+
+  const handleDelete = (id: string, name: string) => {
+    Alert.alert(
+      'Eliminar Rutina',
+      `¿Estás seguro de que deseas eliminar "${name}"?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Eliminar', 
+          style: 'destructive', 
+          onPress: () => deleteRoutine(id) 
+        },
+      ]
+    );
+  };
+
+  const renderItem = ({ item }: { item: Routine }) => (
+    <View style={styles.card}>
+      <View style={styles.infoContainer}>
+        <Text style={styles.routineName}>{item.name}</Text>
+        <Text style={styles.routineDetails}>Grupo: {item.muscleGroup}</Text>
+        <Text style={styles.routineDetails}>Duración: {item.duration} mins</Text>
+      </View>
+
+      {/* Contenedor de los 3 íconos requeridos */}
+      <View style={styles.actionsContainer}>
+        {/* Ver Detalles (Ojo) */}
+        <TouchableOpacity 
+          style={styles.iconButton}
+          onPress={() => navigation.navigate('RoutineDetail', { id: item.id })}
+        >
+          <Ionicons name="eye-outline" size={22} color="#4CD964" />
+        </TouchableOpacity>
+
+        {/* Editar (Lápiz) */}
+        <TouchableOpacity 
+          style={styles.iconButton}
+          onPress={() => navigation.navigate('AddRoutine', { id: item.id })}
+        >
+          <Ionicons name="pencil-outline" size={22} color="#007AFF" />
+        </TouchableOpacity>
+
+        {/* Eliminar (Basurero) */}
+        <TouchableOpacity 
+          style={styles.iconButton}
+          onPress={() => handleDelete(item.id, item.name)}
+        >
+          <Ionicons name="trash-outline" size={22} color="#FF3B30" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
   return (
-    <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
-      <Text style={styles.headerTitle}>Tus Rutinas</Text>
-      
-      <TouchableOpacity 
-        style={styles.workoutCard}
-        activeOpacity={0.8}
-        onPress={() => navigation.navigate('ChestDetail')}
+    <View style={styles.container}>
+      <FlatList
+        data={routines}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        contentContainerStyle={styles.listContainer}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No hay rutinas registradas. ¡Crea una nueva!</Text>
+        }
+      />
+
+      {/* Botón flotante (+) para ir al formulario de creación */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => navigation.navigate('AddRoutine')}
       >
-        <View style={styles.iconContainer}>
-          <Ionicons name="body" size={30} color="#FF7300" />
-        </View>
-        <View style={styles.cardContent}>
-          <Text style={styles.cardTitle}>Día 1: Pecho y Tríceps</Text>
-          <Text style={styles.cardSubtitle}>Hipertrofia • 6 Ejercicios</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={24} color="#888" />
+        <Ionicons name="add" size={30} color="#FFF" />
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({ 
-  container: { flex: 1, backgroundColor: '#1A1D24', paddingHorizontal: 20 },
-  headerTitle: { color: '#FFF', fontSize: 28, fontWeight: '900', marginVertical: 20 },
-  workoutCard: { 
-    backgroundColor: '#252932', 
-    padding: 15, 
-    borderRadius: 16, 
-    flexDirection: 'row', 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#121212',
+  },
+  listContainer: {
+    padding: 16,
+  },
+  card: {
+    backgroundColor: '#1E1E1E',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#2C2C2C',
+  },
+  infoContainer: {
+    flex: 1,
+  },
+  routineName: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  routineDetails: {
+    color: '#AAA',
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconButton: {
+    padding: 8,
+    marginLeft: 4,
+  },
+  emptyText: {
+    color: '#888',
+    textAlign: 'center',
+    marginTop: 40,
+    fontSize: 16,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    backgroundColor: '#FF4500',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
   },
-  iconContainer: {
-    backgroundColor: 'rgba(255, 115, 0, 0.15)', 
-    padding: 12,
-    borderRadius: 12,
-    marginRight: 15
-  },
-  cardContent: { flex: 1 },
-  cardTitle: { color: '#FFF', fontSize: 17, fontWeight: 'bold' },
-  cardSubtitle: { color: '#AAA', fontSize: 13, marginTop: 4 }
 });
